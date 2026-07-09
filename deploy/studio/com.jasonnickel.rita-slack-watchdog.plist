@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.jasonnickel.rita-slack-watchdog</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/bash</string>
+		<string>/Users/jasonnickel-mac-studio/Developer/hermes-agent/deploy/studio/rita-slack-watchdog.sh</string>
+	</array>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>HOME</key>
+		<string>/Users/jasonnickel-mac-studio</string>
+		<key>PATH</key>
+		<string>/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+	</dict>
+	<key>StartInterval</key>
+	<integer>300</integer>
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>ThrottleInterval</key>
+	<integer>300</integer>
+	<key>StandardOutPath</key>
+	<string>/Users/jasonnickel-mac-studio/.hermes/logs/slack-watchdog.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Users/jasonnickel-mac-studio/.hermes/logs/slack-watchdog.log</string>
+	<key>UserName</key>
+	<string>jasonnickel-mac-studio</string>
+</dict>
+</plist>
