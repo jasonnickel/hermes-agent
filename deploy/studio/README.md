@@ -72,5 +72,9 @@ Rita card from `~/.claude/LOOP-REGISTRY.md`.
 Strong tier and heartbeat tier are configured in `~/.hermes/config.yaml` /
 `auth.json`. Decision record: corpus doc "Rita / Hermes - Model Routing
 Recommendation (2026-07-09)". Cutover shipped on the incumbent GPT-5.5/Codex
-subscription brain; the `claude -p` Opus strong-tier shim and `local-bulk`
-(Qwen3.6-35B) heartbeat tier are wired post-cutover.
+subscription brain; the `claude -p` Opus strong-tier shim is dropped. The scoped
+LiteLLM provider and `local-bulk` (Qwen3.6-35B-A3B-oQ6-mtp) heartbeat route are
+configured, but a 2026-07-13 sanitized audit did not establish successful current
+background traffic. Treat the heartbeat route as operationally unverified until a
+fresh non-sensitive Rita canary passes; do not substitute it for the Codex strong
+tier.
