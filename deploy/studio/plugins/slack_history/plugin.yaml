@@ -1,0 +1,8 @@
+name: slack_history
+version: 1.0.0
+description: "Read-only Slack channel history for Rita - pull the recent message window from any channel she has joined, and see which alert channels are quiet. Block Kit aware. Never posts or joins."
+author: Jason Nickel
+kind: standalone
+provides_tools:
+  - slack_history
+  - slack_channels

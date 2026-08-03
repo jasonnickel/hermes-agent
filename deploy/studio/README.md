@@ -78,3 +78,67 @@ configured, but a 2026-07-13 sanitized audit did not establish successful curren
 background traffic. Treat the heartbeat route as operationally unverified until a
 fresh non-sensitive Rita canary passes; do not substitute it for the Codex strong
 tier.
+
+The heartbeat route is VERIFIED as of 2026-08-03: with the scoped
+`RITA_LITELLM_KEY`, LiteLLM `:4000` served `local-bulk` a PONG at HTTP 200.
+That supersedes the 2026-07-13 unverified caveat above.
+
+## Upgrading Hermes
+
+Rebase this deploy layer onto the upstream tag. Do NOT merge upstream into
+the deploy branch: upstream refactors orphan in-tree patches (0.18.0 moved
+`gateway/platforms/slack.py` to `plugins/platforms/slack/`, stranding two
+fork patches that had lived there since May).
+
+```bash
+git fetch upstream --tags
+git worktree add ../hermes-agent-<tag> -b studio-deploy-<tag> <tag>   # build here, Rita stays up
+# cherry-pick the deploy commits, re-apply any local shim with `git apply -3`
+# uv sync in the worktree first: proves the build and warms the cache
+```
+
+Rehearse the config migration on a COPY before touching the live one -
+`hermes doctor --fix` is what migrates (a plain config load does not), the
+migration is one-way, and it strips every YAML comment from `config.yaml`:
+
+```bash
+cp -a ~/.hermes /tmp/hermes-migtest
+HERMES_HOME=/tmp/hermes-migtest venv/bin/hermes doctor --fix
+```
+
+Cutover: bootout both daemons, `tar -czf` `~/.hermes` (consistent only with
+the gateway stopped), `mv venv venv-<oldver>-rollback`, checkout, `uv sync`,
+`hermes doctor --fix`, `bash deploy/studio/rita-gateway.sh --check`, then
+bootstrap. Verify Slack auth, MCP tool registration, and the LiteLLM route
+before calling it done.
+
+Pushing the fork requires `/infrastructure/GITHUB_PAT` over HTTPS. The
+Studio's SSH deploy key is read-only on this repo and fails with
+"Permission to jasonnickel/hermes-agent.git denied to deploy key".
+
+## Local agent capability (user plugins)
+
+Local tools live in `~/.hermes/plugins/`, NOT in this repo tree, so upstream
+refactors cannot orphan them. `plugins/slack_history/` here is the
+version-controlled copy; `~/.hermes/plugins/` is what actually loads.
+
+```bash
+cp -a deploy/studio/plugins/slack_history ~/.hermes/plugins/
+hermes plugins enable slack_history
+```
+
+Both gates are required or the tools register but stay invisible to Rita:
+
+- `plugins.enabled` must list `slack_history`
+- `platform_toolsets.slack` must list `slack_history` alongside `hermes-slack`
+
+`hermes config set` writes scalars, so setting `platform_toolsets.slack`
+through it yields `slack: a,b` where every sibling is a block sequence.
+Fix the YAML to list form by hand afterwards.
+
+`slack_history` provides two read-only tools: `slack_history` (recent
+messages in a channel, Block Kit aware) and `slack_channels` (readable
+channels plus how long since each last received a message, which is how a
+quiet alert channel is distinguished from a broken one). Neither posts nor
+joins; a non-member channel returns `not_in_channel` with the `/invite`
+fix rather than auto-joining.
