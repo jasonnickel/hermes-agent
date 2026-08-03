@@ -100,6 +100,14 @@ main() {
 
   load_secrets || die "aborting start: Infisical secrets missing."
 
+  # Silent catch-up: record what arrived while the gateway was down so
+  # Rita can answer accurately about the gap. Runs BEFORE the gateway so
+  # the downtime window is still knowable. Never posts to Slack, and
+  # never blocks the boot - it fails soft and always exits 0.
+  if ! "${VENV_DIR}/bin/python" "${HERMES_CODE_DIR}/deploy/studio/rita-catchup.py"; then
+    log "warn: catch-up pass failed; starting gateway anyway"
+  fi
+
   cd "$HERMES_CODE_DIR"
   log "starting Hermes gateway (HERMES_HOME=$HERMES_HOME)"
   exec "${VENV_DIR}/bin/python" -m hermes_cli.main gateway run --replace

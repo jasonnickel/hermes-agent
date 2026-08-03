@@ -14,6 +14,7 @@ Registers two tools into the ``slack_history`` toolset. Both gate on
 
 from __future__ import annotations
 
+from .catchup import llm_request_middleware
 from .tools import (
     SLACK_CHANNELS_SCHEMA,
     SLACK_HISTORY_SCHEMA,
@@ -56,3 +57,7 @@ def register(ctx) -> None:
             description=description,
             emoji=emoji,
         )
+
+    # Silent catch-up: injects what she missed while the gateway was down
+    # into her context once, on her next real Slack turn. Never posts.
+    ctx.register_middleware("llm_request", llm_request_middleware)
